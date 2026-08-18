@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Froze Client — чит от Fr0zen Squ2d</title>
+<meta name="description" content="Froze Client — приватный клиент от клана Fr0zen Squ2d. Подписка 99 ₽/мес через DonationAlerts.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%E2%9D%84%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#04070e;
+    --bg-2:#070c17;
+    --ice:#8fd9ff;
+    --ice-2:#4cbfff;
+    --ice-deep:#1f7fd1;
+    --text:#e8f4ff;
+    --muted:#8fa9c2;
+    --line:rgba(146,212,255,.14);
+    --glass:rgba(148,205,255,.045);
+    --glass-2:rgba(148,205,255,.08);
+    --radius:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(76,191,255,.35);color:#fff}
+
+  /* ---------- фон: сияние + морозный шум ---------- */
+  .aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .aurora::before,.aurora::after{
+    content:"";position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;
+  }
+  .aurora::before{
+    width:60vw;height:60vw;left:-15vw;top:-25vw;
+    background:radial-gradient(circle,rgba(35,120,210,.5),transparent 65%);
+  }
+  .aurora::after{
+    width:55vw;height:55vw;right:-18vw;top:10vh;
+    background:radial-gradient(circle,rgba(96,205,255,.28),transparent 65%);
+  }
+  .frost-noise{
+    position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  #snow{position:fixed;inset:0;z-index:1;pointer-events:none}
+
+  main,header,footer{position:relative;z-index:2}
+
+  /* ---------- навигация ---------- */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:10;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px clamp(20px,5vw,56px);
+    background:rgba(4,7,14,.55);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    border-bottom:1px solid var(--line);
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.4px;color:#fff;text-decoration:none;font-size:17px}
+  .logo svg{width:22px;height:22px;filter:drop-shadow(0 0 8px rgba(120,210,255,.8))}
+  .logo span b{color:var(--ice)}
+  .nav-links{display:flex;gap:28px}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:14px;transition:color .25s}
+  .nav-links a:hover{color:#fff}
+  @media(max-width:640px){.nav-links{display:none}}
+
+  /* ---------- общее ---------- */
+  section{padding:clamp(70px,10vw,130px) clamp(20px,5vw,56px);max-width:1120px;margin:0 auto}
+  .overline{
+    text-transform:uppercase;letter-spacing:.28em;font-size:12px;font-weight:600;
+    color:var(--ice);margin-bottom:16px;display:flex;align-items:center;gap:10px;
+  }
+  .overline::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,transparent,var(--ice))}
+  h2{font-size:clamp(28px,4.4vw,44px);font-weight:800;letter-spacing:-.5px;line-height:1.15;margin-bottom:18px}
+  .lead{color:var(--muted);max-width:640px;font-size:16px}
+
+  /* ---------- hero ---------- */
+  .hero{
+    min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;
+    text-align:center;padding-top:120px;max-width:none;
+  }
+  .badge{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:7px 16px;border-radius:100px;font-size:13px;color:#cfeaff;
+    background:var(--glass);border:1px solid var(--line);
+    backdrop-filter:blur(10px);margin-bottom:30px;
+  }
+  .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--ice-2);box-shadow:0 0 12px var(--ice-2);animation:pulse 2.2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.8)}}
+
+  h1{
+    font-size:clamp(46px,9vw,104px);font-weight:900;letter-spacing:-2px;line-height:1.02;
+    background:linear-gradient(180deg,#ffffff 5%,#b9e5ff 55%,#4fb6ff 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 34px rgba(80,180,255,.25));
+  }
+  .hero p.sub{margin-top:22px;color:var(--muted);font-size:clamp(15px,2vw,18px);max-width:560px}
+  .hero-cta{display:flex;gap:14px;margin-top:38px;flex-wrap:wrap;justify-content:center}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;
+    padding:15px 30px;border-radius:14px;font-size:15px;font-weight:600;
+    text-decoration:none;transition:transform .25s,box-shadow .25s,background .25s;
+    border:1px solid transparent;cursor:pointer;
+  }
+  .btn-primary{
+    color:#031320;
+    background:linear-gradient(135deg,#8fdcff 0%,#37a9ff 100%);
+    box-shadow:0 10px 34px rgba(56,175,255,.35),inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 16px 44px rgba(56,175,255,.5)}
+  .btn-ghost{
+    color:#d9f2ff;background:var(--glass);border-color:var(--line);
+    backdrop-filter:blur(8px);
+  }
+  .btn-ghost:hover{transform:translateY(-3px);background:var(--glass-2)}
+
+  .hero-hwid{
+    margin-top:56px;padding:16px 22px;border-radius:14px;
+    background:rgba(6,12,22,.6);border:1px solid var(--line);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px;color:#9fcbe8;display:flex;align-items:center;gap:14px;max-width:92vw;
+    backdrop-filter:blur(10px);
+  }
+  .hero-hwid .lbl{color:var(--ice);font-weight:700;flex-shrink:0;letter-spacing:.1em}
+  .hero-hwid code{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .copy-btn{
+    flex-shrink:0;border:1px solid var(--line);background:rgba(148,205,255,.08);
+    color:#cfeaff;font-size:12px;padding:5px 12px;border-radius:9px;cursor:pointer;
+    transition:background .25s;
+  }
+  .copy-btn:hover{background:rgba(148,205,255,.2)}
+
+  .scroll-hint{margin-top:64px;color:var(--muted);font-size:12px;letter-spacing:.25em;text-transform:uppercase;animation:bob 2.6s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(7px);opacity:1}}
+
+  /* ---------- фичи ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:44px}
+  .card{
+    background:var(--glass);border:1px solid var(--line);border-radius:var(--radius);
+    padding:30px 26px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    transition:transform .3s,border-color .3s,background .3s;
+    position:relative;overflow:hidden;
+  }
+  .card::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(420px 180px at 20% -20%,rgba(120,205,255,.12),transparent 70%);
+    opacity:0;transition:opacity .35s;
+  }
+  .card:hover{transform:translateY(-5px);border-color:rgba(146,212,255,.32);background:var(--glass-2)}
+  .card:hover::before{opacity:1}
+  .card .ico{
+    width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,rgba(143,217,255,.16),rgba(76,191,255,.06));
+    border:1px solid var(--line);font-size:21px;margin-bottom:18px;
+  }
+  .card h3{font-size:17px;margin-bottom:8px;letter-spacing:-.2px}
+  .card p{color:var(--muted);font-size:14px}
+
+  /* ---------- шаги покупки ---------- */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:44px;counter-reset:step}
+  .step{
+    background:var(--glass);border:1px solid var(--line);border-radius:var(--radius);
+    padding:28px 26px;backdrop-filter:blur(12px);position:relative;
+  }
+  .step .num{
+    font-size:13px;font-weight:800;color:#031320;
+    width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#8fdcff,#37a9ff);margin-bottom:16px;
+    box-shadow:0 4px 16px rgba(56,175,255,.4);
+  }
+  .step h3{font-size:16px;margin-bottom:8px}
+  .step p{color:var(--muted);font-size:14px}
+  .step a{color:var(--ice);text-decoration:none;border-bottom:1px solid rgba(143,217,255,.35)}
+  .step a:hover{color:#fff}
+
+  /* ---------- макет формы доната ---------- */
+  .donate-mock{
+    margin-top:44px;max-width:560px;border-radius:var(--radius);
+    background:rgba(6,12,22,.65);border:1px solid var(--line);
+    backdrop-filter:blur(14px);overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.45);
+  }
+  .donate-mock .dm-head{
+    padding:16px 24px;border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);
+  }
+  .dm-head .dots{display:flex;gap:6px}
+  .dm-head .dots i{width:9px;height:9px;border-radius:50%;background:rgba(148,205,255,.22);display:block}
+  .donate-mock .dm-body{padding:26px 24px;display:flex;flex-direction:column;gap:18px}
+  .field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-bottom:8px}
+  .field .val{
+    padding:13px 16px;border-radius:12px;font-size:14px;
+    background:rgba(148,205,255,.06);border:1px solid var(--line);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    word-break:break-all;
+  }
+  .field.hl .val{border-color:rgba(120,205,255,.55);box-shadow:0 0 0 3px rgba(80,180,255,.13),0 0 24px rgba(80,180,255,.12)}
+  .field .hint{font-size:12px;color:var(--ice);margin-top:7px}
+  .field .val.price{font-family:inherit;font-weight:700;color:#fff;font-size:16px}
+
+  /* ---------- HWID ---------- */
+  .hwid-methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:44px}
+  .method{
+    background:var(--glass);border:1px solid var(--line);border-radius:var(--radius);
+    padding:30px 28px;backdrop-filter:blur(12px);
+  }
+  .method .tag{
+    display:inline-block;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ice);background:rgba(80,180,255,.1);border:1px solid rgba(80,180,255,.3);
+    padding:5px 12px;border-radius:100px;margin-bottom:16px;
+  }
+  .method h3{font-size:18px;margin-bottom:10px}
+  .method p{color:var(--muted);font-size:14px}
+  .method ol{color:var(--muted);font-size:14px;padding-left:20px;display:flex;flex-direction:column;gap:7px}
+  .method ol b{color:var(--text);font-weight:600}
+  pre{
+    margin-top:18px;background:rgba(3,8,16,.8);border:1px solid var(--line);
+    border-radius:14px;padding:18px;overflow-x:auto;position:relative;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px;line-height:1.7;color:#a5d8f5;
+  }
+  pre .copy-btn{position:absolute;top:10px;right:10px}
+  pre .c{color:#557a97}
+  .note{
+    margin-top:26px;display:flex;gap:14px;align-items:flex-start;
+    padding:18px 22px;border-radius:16px;font-size:14px;color:#cfe6f7;
+    background:rgba(80,180,255,.07);border:1px solid rgba(80,180,255,.22);
+  }
+  .note .n-ico{font-size:18px;flex-shrink:0}
+
+  /* ---------- FAQ ---------- */
+  .faq{margin-top:44px;display:flex;flex-direction:column;gap:12px;max-width:760px}
+  details{
+    background:var(--glass);border:1px solid var(--line);border-radius:16px;
+    padding:20px 24px;backdrop-filter:blur(10px);transition:border-color .3s;
+  }
+  details[open]{border-color:rgba(146,212,255,.35)}
+  summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";color:var(--ice);font-size:22px;font-weight:300;transition:transform .3s;flex-shrink:0}
+  details[open] summary::after{transform:rotate(45deg)}
+  details p{margin-top:12px;color:var(--muted);font-size:14px}
+
+  /* ---------- CTA ---------- */
+  .final{
+    text-align:center;border-radius:28px;margin-top:0;
+    background:
+      radial-gradient(600px 300px at 50% -10%,rgba(80,180,255,.2),transparent 70%),
+      var(--glass);
+    border:1px solid var(--line);
+    padding:clamp(50px,8vw,90px) clamp(24px,5vw,60px);
+    backdrop-filter:blur(14px);
+  }
+  .final h2{background:linear-gradient(180deg,#fff,#6ec6ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .final p{color:var(--muted);max-width:480px;margin:0 auto}
+  .final .hero-cta{margin-top:32px}
+  .price-tag{
+    display:inline-flex;align-items:baseline;gap:6px;margin-top:26px;
+    font-size:14px;color:var(--muted);
+  }
+  .price-tag b{font-size:34px;color:#fff;letter-spacing:-1px}
+
+  footer{
+    border-top:1px solid var(--line);padding:36px clamp(20px,5vw,56px);
+    display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;
+    color:var(--muted);font-size:13px;
+  }
+  footer .f-logo{display:flex;align-items:center;gap:9px;color:#cfe9fa;font-weight:600}
+  footer .f-logo svg{width:16px;height:16px;opacity:.85}
+
+  /* ---------- появление при скролле ---------- */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.visible{opacity:1;transform:none}
+
+  @media(prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .scroll-hint,.badge .dot{animation:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora"></div>
+<div class="frost-noise"></div>
+<canvas id="snow"></canvas>
+
+<nav>
+  <a class="logo" href="#top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#9fdcff" stroke-width="1.6" stroke-linecap="round">
+      <path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1"/>
+      <path d="M12 5l-2-2M12 5l2-2M12 19l-2 2M12 19l2 2M5 12l-2-2M5 12l-2 2M19 12l2-2M19 12l2 2"/>
+    </svg>
+    <span>Froze<b>Client</b></span>
+  </a>
+  <div class="nav-links">
+    <a href="#features">О клиенте</a>
+    <a href="#buy">Как купить</a>
+    <a href="#hwid">HWID</a>
+    <a href="#faq">FAQ</a>
+  </div>
+</nav>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="badge"><span class="dot"></span> приватный клиент &nbsp;·&nbsp; клан Fr0zen Squ2d</div>
+    <h1>FROZE<br>CLIENT</h1>
+    <p class="sub">Холодная точность. Ледяная плавность. Клиент, который замораживает сервер — а не твой FPS.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="#buy">Купить за 99 ₽/мес ❄</a>
+      <a class="btn btn-ghost" href="#features">Узнать больше</a>
+    </div>
+    <div class="hero-hwid">
+      <span class="lbl">формат HWID</span>
+      <code>0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef</code>
+    </div>
+    <div class="scroll-hint">листай вниз ↓</div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section id="features">
+    <div class="overline reveal">О клиенте</div>
+    <h2 class="reveal">Создан, чтобы доминировать.<br>Отточен, чтобы не lagать.</h2>
+    <p class="lead reveal">Froze Client разрабатывается кланом Fr0zen Squ2d для своих — и только по подписке. Никаких публичных сборок и сливов.</p>
+    <div class="grid">
+      <div class="card reveal">
+        <div class="ico">⚡</div>
+        <h3>Плавность</h3>
+        <p>Оптимизированный код без просадок FPS — клиент не мешает игре даже на слабых ПК.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico">🧊</div>
+        <h3>Приватность</h3>
+        <p>Доступ только по HWID. Клиент не лежит в открытом доступе — только для подписчиков.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico">🔄</div>
+        <h3>Обновления</h3>
+        <p>Регулярные апдейты и актуальные сборки — подписчики получают их первыми.</p>
+      </div>
+      <div class="card reveal">
+        <div class="ico">💬</div>
+        <h3>Поддержка</h3>
+        <p>Вопросы по установке и запуску решаем лично в чате после покупки.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ КАК КУПИТЬ ============ -->
+  <section id="buy">
+    <div class="overline reveal">Покупка</div>
+    <h2 class="reveal">Как получить Froze Client</h2>
+    <p class="lead reveal">Оплата проходит через DonationAlerts — быстро и без регистрации. Четыре шага, и jar у тебя.</p>
+
+    <div class="steps">
+      <div class="step reveal">
+        <div class="num">1</div>
+        <h3>Открой DonationAlerts</h3>
+        <p>Перейди по ссылке <a href="https://www.donationalerts.com/r/fr0zensqu2d" target="_blank" rel="noopener">donationalerts.com/r/fr0zensqu2d</a></p>
+      </div>
+      <div class="step reveal">
+        <div class="num">2</div>
+        <h3>Отправь 99 ₽</h3>
+        <p>Это стоимость подписки на <b>1 месяц</b>. Любой другой номинал не активирует выдачу.</p>
+      </div>
+      <div class="step reveal">
+        <div class="num">3</div>
+        <h3>Заполни поля правильно</h3>
+        <p>Вместо ника вставь свой <b>HWID</b>, а в сообщении оставь контакт для связи (Telegram или Discord).</p>
+      </div>
+      <div class="step reveal">
+        <div class="num">4</div>
+        <h3>Получи jar</h3>
+        <p>После подтверждения оплаты мы напишем тебе по указанному контакту и пришлём jar-файл клиента.</p>
+      </div>
+    </div>
+
+    <div class="donate-mock reveal">
+      <div class="dm-head">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <span>donationalerts.com/r/fr0zensqu2d — пример заполнения</span>
+      </div>
+      <div class="dm-body">
+        <div class="field hl">
+          <label>Ваш ник → сюда вставляй HWID</label>
+          <div class="val">0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef</div>
+          <div class="hint">↑ это только пример формата — вставляй СВОЙ настоящий HWID (64 символа)</div>
+        </div>
+        <div class="field hl">
+          <label>Сообщение → сюда контакт для получения jar</label>
+          <div class="val">@your_telegram</div>
+          <div class="hint">↑ Telegram или Discord, куда прислать клиент</div>
+        </div>
+        <div class="field">
+          <label>Сумма</label>
+          <div class="val price">99 ₽ &nbsp;·&nbsp; подписка на 1 месяц</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HWID ============ -->
+  <section id="hwid">
+    <div class="overline reveal">Инструкция</div>
+    <h2 class="reveal">Где взять свой HWID?</h2>
+    <p class="lead reveal">HWID — это уникальный «отпечаток» твоего компьютера: строка из 64 шестнадцатеричных символов (цифры 0–9 и буквы a–f). Он нужен, чтобы клиент работал только на твоём ПК. Получить его можно двумя способами ниже.</p>
+
+    <div class="hwid-methods">
+      <div class="method reveal">
+        <span class="tag">Способ 1 · самый простой</span>
+        <h3>Через сам клиент</h3>
+        <p>При первом запуске Froze Client показывает твой HWID прямо на экране / в консоли:</p>
+        <ol style="margin-top:12px">
+          <li>Запусти jar-файл клиента.</li>
+          <li>Скопируй показанный <b>HWID</b>.</li>
+          <li>Вставь его в поле «Ваш ник» на DonationAlerts.</li>
+        </ol>
+      </div>
+      <div class="method reveal">
+        <span class="tag">Способ 2 · вручную (Windows)</span>
+        <h3>Через PowerShell</h3>
+        <p>Открой <b>PowerShell</b> (Win&nbsp;+&nbsp;X → «Терминал Windows»), вставь команду и нажми Enter:</p>
+        <pre><button class="copy-btn" data-copy-target="ps-cmd">копировать</button><code id="ps-cmd">$src  = (Get-CimInstance Win32_ComputerSystemProduct).UUID + (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Cryptography').MachineGuid
+$hash = [System.Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes($src))
+($hash | ForEach-Object { $_.ToString('x2') }) -join ''</code></pre>
+        <p>В ответ появится строка из 64 символов — это и есть твой HWID. Скопируй её целиком.</p>
+      </div>
+    </div>
+
+    <div class="note reveal">
+      <span class="n-ico">❄</span>
+      <span><b>Важно:</b> HWID привязан к железу и системе. После переустановки Windows или замены комплектующих он изменится — напиши нам, и мы обновим привязку. В сообщении к донату оставляй <b>только</b> контакт для связи, не путай поля местами.</span>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section id="faq">
+    <div class="overline reveal">Вопросы</div>
+    <h2 class="reveal">FAQ</h2>
+    <div class="faq">
+      <details class="reveal">
+        <summary>Сколько стоит подписка и на какой срок?</summary>
+        <p>99 ₽ за 1 месяц. Продление — такой же донат на 99 ₽ с тем же HWID в поле ника.</p>
+      </details>
+      <details class="reveal">
+        <summary>Как быстро я получу клиент после оплаты?</summary>
+        <p>Как только мы увидим донат — напишем тебе по контакту из сообщения и пришлём jar-файл с инструкцией по запуску.</p>
+      </details>
+      <details class="reveal">
+        <summary>Я ошибся при вводе HWID. Что делать?</summary>
+        <p>Напиши нам по контакту, который ты оставил в сообщении, приложи скриншот оплаты и укажи правильный HWID — всё исправим.</p>
+      </details>
+      <details class="reveal">
+        <summary>Можно ли играть с двух компьютеров?</summary>
+        <p>Привязка идёт к одному HWID. Если нужен второй ПК — свяжись с нами после оплаты, решим индивидуально.</p>
+      </details>
+      <details class="reveal">
+        <summary>Где взять HWID, если я ещё не получал клиент?</summary>
+        <p>Используй PowerShell-команду из раздела «Где взять свой HWID?» выше — она сгенерирует нужные 64 символа.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ ФИНАЛЬНЫЙ CTA ============ -->
+  <section>
+    <div class="final reveal">
+      <h2>Готов заморозить сервер?</h2>
+      <p>Оплати подписку, оставь HWID и контакт — и уже сегодня Froze Client будет у тебя.</p>
+      <div class="price-tag"><b>99 ₽</b>&nbsp;/ месяц</div>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="https://www.donationalerts.com/r/fr0zensqu2d" target="_blank" rel="noopener">Перейти к оплате ❄</a>
+        <a class="btn btn-ghost" href="#hwid">Как узнать HWID</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="f-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#9fdcff" stroke-width="1.6" stroke-linecap="round">
+      <path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1"/>
+    </svg>
+    Froze Client · Fr0zen Squ2d
+  </div>
+  <div>© 2026 Fr0zen Squ2d. Проект не аффилирован с Mojang Studios и Microsoft.</div>
+</footer>
+
+<script>
+/* ---------- снег ---------- */
+(function(){
+  const canvas=document.getElementById('snow'),ctx=canvas.getContext('2d');
+  let W,H,flakes=[],raf;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function resize(){
+    W=canvas.width=innerWidth;H=canvas.height=innerHeight;
+    const count=Math.min(160,Math.floor(W*H/14000));
+    flakes=Array.from({length:count},()=>spawn(true));
+  }
+  function spawn(anywhere){
+    return{
+      x:Math.random()*W,
+      y:anywhere?Math.random()*H:-8,
+      r:Math.random()*2.3+.7,
+      s:Math.random()*.55+.22,
+      drift:Math.random()*2*Math.PI,
+      driftSpeed:Math.random()*.012+.004,
+      o:Math.random()*.5+.25
+    };
+  }
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    for(const f of flakes){
+      f.drift+=f.driftSpeed;
+      f.y+=f.s;
+      f.x+=Math.sin(f.drift)*.45;
+      if(f.y>H+10||f.x<-12||f.x>W+12)Object.assign(f,spawn(false));
+      ctx.beginPath();
+      ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(200,232,255,'+f.o+')';
+      ctx.shadowColor='rgba(150,215,255,.9)';
+      ctx.shadowBlur=f.r*3;
+      ctx.fill();
+      ctx.shadowBlur=0;
+    }
+    raf=requestAnimationFrame(tick);
+  }
+  addEventListener('resize',resize);
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden)cancelAnimationFrame(raf);else if(!reduced)tick();
+  });
+  resize();
+  if(!reduced)tick();
+})();
+
+/* ---------- появление блоков ---------- */
+(function(){
+  const io=new IntersectionObserver(es=>{
+    es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}});
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+})();
+
+/* ---------- копирование ---------- */
+document.querySelectorAll('[data-copy-target]').forEach(btn=>{
+  btn.addEventListener('click',async()=>{
+    const target=document.getElementById(btn.dataset.copyTarget);
+    if(!target)return;
+    try{
+      await navigator.clipboard.writeText(target.textContent.trim());
+    }catch(e){
+      const r=document.createRange();r.selectNodeContents(target);
+      const sel=getSelection();sel.removeAllRanges();sel.addRange(r);
+      document.execCommand('copy');sel.removeAllRanges();
+    }
+    const old=btn.textContent;
+    btn.textContent='скопировано ✓';
+    setTimeout(()=>btn.textContent=old,1600);
+  });
+});
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2d02b22fcb3ec5a',t:'MTc4NzA0ODI0Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
